@@ -6,4 +6,6 @@ Prerequisites: Python 3.8.5
 3. Активировать виртальное окружение - source venv/bin/activate
 4. Обновить pip - pip install -U pip
 5. Установить зависимости из файла requirements.txt - pip install -r requirements.txt
-6. Запустить тесты командой - pytest из корня проекта
+6. Запустить тесты командой - pytest из корня проекта.
+ - запустить тесты с генерацией отчетов в allure - pytest --alluredir <dir_name>
+ - просмотр отчета allure serve <dir_name>
