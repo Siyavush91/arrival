@@ -16,7 +16,6 @@ def test_api_base_checks(client, endpoint):
 @pytest.mark.parametrize("endpoint", endpoints)
 def test_device_name(client, endpoint):
     """
-    API предоставляет информацию о доступных устройствах в сети
     """
     device_name = ["Engine", "Power", "Transmission", "Brake", "Control"]
     response = client.do_get(endpoint)
@@ -28,7 +27,6 @@ def test_device_name(client, endpoint):
 @pytest.mark.parametrize("endpoint", endpoints)
 def test_device_address(client, endpoint):
     """
-    API предоставляет информацию о доступных устройствах в сети
     """
     device_address = ["4A", "65", "80", "3F", "40"]
     response = client.do_get(endpoint)
