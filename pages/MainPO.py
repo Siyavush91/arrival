@@ -2,26 +2,23 @@ from pages.BasePage import BasePage
 from selenium.webdriver.common.by import By
 
 class MainPO(BasePage):
-    devices_table =  (By.CLASS_NAME, "ant-row")
+    devices_table = (By.CLASS_NAME, "ant-row")
     table_head_row = (By.CLASS_NAME, "ant-table-thead")
-    table_engine_row = (By.CSS_SELECTOR, '[data-row-key="4A"]')
-    table_power_row = (By.CSS_SELECTOR, '[data-row-key="65"]')
-    table_transmission_row = (By.CSS_SELECTOR, '[data-row-key="80]')
-    table_brake_row = (By.CSS_SELECTOR, '[data-row-key="3F"]')
-    buttons = (By.CLASS_NAME, "ant-btn-primary")
 
-    def verify_page(self):
-        self._wait_for_elements_present([self.devices_table, self.table_head_row, self.table_brake_row, self.table_engine_row, self.table_transmission_row])
-        return
+    def verify_device(self, device_address: str, device_type: str, device_name: str):
+        table_device_row = (By.XPATH, f"//tr[@data-row-key='{device_address}']//descendant::td[text()='{device_name}']"
+                                      f"//following-sibling::td[text()='{device_type}']")
+        self._wait_element_displayed(table_device_row)
+        return self
 
     def waiter(self):
         self._wait_element_displayed(self.devices_table)
+        return self
 
-    def verify_table_header(self):
-        text = self._get_element_text(self.table_head_row)
-        return text
+    def go_to_monitoring_page(self, device_address: str):
+        table_device_row = (By.XPATH, f"//tr[@data-row-key='{device_address}']//button")
+        return self._find_elements(table_device_row)[0].click()
 
-    def go_to_engine_monitoring(self):
-        button_list = self._find_elements(self.buttons)
-        button_list[0].click()
-        return
+    def go_to_diagnostics_page(self, device_address: str):
+        device_row = (By.XPATH, f"//tr[@data-row-key='{device_address}']//button")
+        return self._find_elements(device_row)[1].click()

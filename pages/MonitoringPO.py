@@ -1,11 +1,16 @@
 from pages.BasePage import BasePage
 from selenium.webdriver.common.by import By
 
-class MonitoringPO(BasePage):
-    monitoring_engine_header = (By.CLASS_NAME, "ant-typography")
 
-    def verify_header(self):
-        h2 = self._find_elements(self.monitoring_engine_header)
-        text = h2[1].text
-        # text = self._get_element_text(self.monitoring_engine_header)
-        return text
+class MonitoringPO(BasePage):
+
+    def verify_pin_one_pmw(self, pin_1_pwm_d: int, pin_1_pwm_f: int):
+        table_device_row = (By.XPATH, f"//div[@class='ant-card']//following::input[@value={pin_1_pwm_d}]"
+                                      f"//following::span[@title={pin_1_pwm_f}]")
+        self._wait_element_displayed(table_device_row)
+        return self
+
+    def verify_pin_two_pmw(self, pin_2_pwm_d: int, pin_2_pwm_f: int):
+        table_device_row = (By.XPATH, f"//div[@class='ant-card']//following::input[@value={pin_2_pwm_d}]"
+                                      f"//following::span[@title={pin_2_pwm_f}]")
+        return self._wait_element_displayed(table_device_row)
