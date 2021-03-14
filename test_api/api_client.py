@@ -19,4 +19,4 @@ class APIClient:
 
     def do_patch(self, endpoint, data=None, **kwargs):
         url = "/".join([self.address, endpoint])
-        return requests.patch(url, data=data, **kwargs)
+        return requests.patch(url, data, **kwargs)
