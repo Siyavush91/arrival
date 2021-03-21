@@ -1,22 +1,33 @@
+import json
 import requests
-import pytest
+
 
 class APIClient:
-    headers = {}
+    def __init__(self, url='http://localhost:5585'):
+        self.url = url
 
-    def __init__(self, address='http://localhost:5585'):
-        self.address = address
+    def get_report(self, address: str = None, rep_id: int = None):
+        report = {'address': address, "repId": rep_id}
+        request = requests.get(f'{self.url}/report', params=report)
+        return request
 
-    def do_get(self, endpoint, data=None):
-        url = "/".join([self.address, endpoint])
-        return requests.get(url, data, headers=self.headers)
+    def get_all_devices(self) -> list:
+        devices_url = f'{self.url}/devices'
+        request = requests.get(devices_url)
+        return json.loads(request.content)
 
-    def do_post(self, endpoint, data=None):
-        url = "/".join([self.address, endpoint])
-        headers = self.headers
-        headers["Content-type"] = "application/json"
-        return requests.post(url, data, headers=headers)
+    def get_device_by_address(self, address: str = None) -> dict:
+        all_devices = self.get_all_devices()
+        new_pmw = next((device for device in all_devices if device['address'] == address), None)
+        return new_pmw
 
-    def do_patch(self, endpoint, data=None, **kwargs):
-        url = "/".join([self.address, endpoint])
-        return requests.patch(url, data, **kwargs)
+    def update_device_pmw(self, address: str = None, duty1: int = None, freq1: int = None, duty2: int = None,
+                   freq2: int = None):
+        device_pmw = {'address': address, 'duty1': duty1, "freq1": freq1, 'duty2': duty2, "freq2": freq2}
+        response = requests.patch(f'{self.url}/devices', params=device_pmw)
+        return response
+
+    def set_device_pmw_to_default(self, address: str = None):
+        device_pmw = {'address': address, 'duty1': 100, "freq1": 100, 'duty2': 100, "freq2": 100}
+        request = requests.patch(f'{self.url}/devices', params=device_pmw)
+        return request

@@ -1,20 +1,24 @@
 import pytest
 
-endpoints = ['/report']
+positive_test_data = [
+    ["4A", 100],
+    ["65", 200],
+    ["80", 300],
+    ["3F", 400]
+]
 
-@pytest.mark.parametrize("endpoint", endpoints)
-def test_api_info_msg_check(client, endpoint):
-
-    payload = {'address': "4A", 'repId': " "}
-    response = client.do_get(endpoint, data=payload)
-    assert response.text == "Invalid type of 'repId' value"
+address_doesnt_exist = [
+    ["100", 100]
+]
 
 
-@pytest.mark.parametrize("endpoint", endpoints)
-@pytest.mark.parametrize("address", ["4A", "65", "80", "3F", "40"])
-@pytest.mark.parametrize("repId", [100, 200, 300, 400])
-def test_api_base_check_report(client, endpoint, address, repId):
-    payload = {'address': address, 'repId': repId}
-    response = client.do_get(endpoint, data=payload)
-    assert response.status_code == 200
-    assert isinstance(response.text, str)
+@pytest.mark.parametrize("address, rep_id", positive_test_data)
+def test_requesting_service_reports(client, address, rep_id):
+    response = client.get_report(address, rep_id)
+    assert response.status_code == 200, "Wrong status"
+
+
+@pytest.mark.parametrize("address, rep_id", address_doesnt_exist)
+def test_device_address_doesnt_exist(client, address, rep_id):
+    response = client.get_report(address, rep_id)
+    assert response.status_code == 400, 'Report requested without device address'

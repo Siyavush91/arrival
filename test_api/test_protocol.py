@@ -1,23 +1,18 @@
-import pytest
+import requests
+from helpers.settings import BASE_HOST
 
-endpoints = ["/devices"]
 
-
-@pytest.mark.parametrize("endpoint", endpoints)
-def test_info(client, endpoint):
-    response = client.do_get(endpoint)
+def test_info():
+    response = requests.get(BASE_HOST)
     assert response.status_code == 200, 'Wrong status'
 
 
-@pytest.mark.parametrize("endpoint", endpoints)
-def test_headers(client, endpoint):
-    response = client.do_get(endpoint)
-    assert response.headers['Date'], 'Header date does not exist'
-    assert response.headers['Content-Type'] == 'application/json'
-    assert response.headers['Content-Length'] == "587"
+def test_header():
+    response = requests.get(BASE_HOST)
+    content_length = str(len(response.text))
+    assert response.headers['Content-Length'] == content_length
 
 
-@pytest.mark.parametrize("endpoint", endpoints)
-def test_not_found(client, endpoint):
-    response = client.do_get(f'{endpoint}/test')
+def test_not_found():
+    response = requests.get(f'{BASE_HOST}/test')
     assert response.status_code == 404, 'Wrong status'

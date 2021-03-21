@@ -1,15 +1,18 @@
 """
 This module contains shared fixtures for UI tests.
 """
-
+import os
 import json
 import allure
 import pytest
 import requests
-from selenium.webdriver import Chrome, Firefox
-from helpers.settings import BASE_HOST, DEVICES_TABLE_HOST
+import datetime
+import logging
+from selenium.webdriver import Firefox
+from helpers.settings import DEVICES_TABLE_HOST
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEventListener
 
 CONFIG_PATH = 'config.json'
 DEFAULT_WAIT_TIME = 10
@@ -27,14 +30,7 @@ def config():
 @pytest.fixture(scope="session")
 def session_vars():
     session_vars = {
-        "address": '',
-        "type": '',
-        "name": '',
-        "freq1": '',
-        "freq2": '',
-        "duty1": '',
-        "duty2": '',
-        "repId": '',
+        "device": '',
     }
     return session_vars
 
@@ -77,6 +73,7 @@ def browser(request, config_browser, config_wait_time):
     driver.implicitly_wait(config_wait_time)
     # open browser fullscreen
     driver.maximize_window()
+    driver = EventFiringWebDriver(driver, WdListener())
 
     # Return the driver object at the end of setup
     yield driver
@@ -97,17 +94,55 @@ def browser(request, config_browser, config_wait_time):
     request.addfinalizer(fin)
 
 
+class WdListener(AbstractEventListener):
+
+    def on_exception(self, exception, driver):
+        dirname = os.path.dirname(__file__)
+        now = datetime.datetime.now()
+        img_name = now.strftime("%Y-%m-%d_%H-%m-%S") + '_img.png'
+        img_path = os.path.join(dirname, 'screenshots', img_name)
+        message = str(now) + driver.name + "_" + exception.msg
+        driver.save_screenshot(img_path)
+        allure.attach.file(img_path, attachment_type=allure.attachment_type.PNG)
+        logging.error(message)
+
+
+@pytest.fixture(scope='session')
+def get_all_devices() -> list:
+    request = requests.get(DEVICES_TABLE_HOST)
+    return json.loads(request.content)
+
+
+@pytest.fixture(scope='session')
+def get_number_of_devices() -> int:
+    request = requests.get(DEVICES_TABLE_HOST).json()
+    number = len(request)
+    return number
+
+
 @pytest.fixture(scope="session")
-def get_devices_attribute(session_vars):
+def get_device_attribute(get_all_devices, get_number_of_devices):
+    i = 0
+    response = get_all_devices
+    attributes_key = ['address','type','name']
+    device_attributes = []
+    for device in range(i, get_number_of_devices):
+        attributes_value = [response[i][x] for x in attributes_key]
+        i += 1
+        device_attributes.append(attributes_value)
+    return device_attributes
+
+
+@pytest.fixture(scope="session")
+def get_devices_attribute(session_vars, get_device_attribute):
     """
     Get devices attributes: address, name, type
     """
-    response = requests.get(DEVICES_TABLE_HOST).json()
-    session_vars['attributes'] = (response[0]['address'], response[0]['type'], response[0]['name'])
-    session_vars['attributes-1'] = (response[1]['address'], response[1]['type'], response[1]['name'])
-    session_vars['attributes-2'] = (response[2]['address'], response[2]['type'], response[2]['name'])
-    session_vars['attributes-3'] = (response[3]['address'], response[3]['type'], response[3]['name'])
-    session_vars['attributes-4'] = (response[4]['address'], response[4]['type'], response[4]['name'])
+    session_vars['device'] = get_device_attribute[0]
+    session_vars['device-1'] = get_device_attribute[1]
+    session_vars['device-2'] = get_device_attribute[2]
+    session_vars['device-3'] = get_device_attribute[3]
+    session_vars['device-4'] = get_device_attribute[4]
 
 
 @pytest.fixture(scope="session")
