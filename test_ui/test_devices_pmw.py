@@ -1,5 +1,5 @@
-from pages.MainPO import MainPO
-from pages.MonitoringPO import MonitoringPO
+from pages.main_page import MainPO
+from pages.monitoring_page import MonitoringPO
 from helpers.settings import BASE_HOST
 from helpers import constants
 

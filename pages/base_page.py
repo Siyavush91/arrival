@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By
 """
 Base Page comes here.
 """
-TIMEOUT=20
+TIMEOUT = 2
 DRIVER_TIMEOUT = 1
 POLL_FREQUENCY = 0.5
 

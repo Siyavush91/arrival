@@ -1,4 +1,4 @@
-from pages.BasePage import BasePage
+from pages.base_page import BasePage
 from selenium.webdriver.common.by import By
 
 class MainPO(BasePage):
@@ -16,9 +16,14 @@ class MainPO(BasePage):
         return self
 
     def go_to_monitoring_page(self, device_address: str):
-        table_device_row = (By.XPATH, f"//tr[@data-row-key='{device_address}']//button")
-        return self._find_elements(table_device_row)[0].click()
+        element = (By.XPATH, f"//tr[@data-row-key='{device_address}']//button")
+        monitoring_btn = self._find_elements(element)[0]
+        monitoring_btn.click()
+        return self
+
 
     def go_to_diagnostics_page(self, device_address: str):
-        device_row = (By.XPATH, f"//tr[@data-row-key='{device_address}']//button")
-        return self._find_elements(device_row)[1].click()
+        element = (By.XPATH, f"//tr[@data-row-key='{device_address}']//button")
+        diagnostics_btn = self._find_elements(element)[1]
+        diagnostics_btn.click()
+        return self
