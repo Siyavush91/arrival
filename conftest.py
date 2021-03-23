@@ -121,37 +121,18 @@ def get_number_of_devices() -> int:
 
 
 @pytest.fixture(scope="session")
-def get_device_attribute(get_all_devices, get_number_of_devices):
-    i = 0
-    response = get_all_devices
-    attributes_key = ['address','type','name']
-    device_attributes = []
-    for device in range(i, get_number_of_devices):
-        attributes_value = [response[i][x] for x in attributes_key]
-        i += 1
-        device_attributes.append(attributes_value)
-    return device_attributes
-
-
-@pytest.fixture(scope="session")
-def get_devices_attribute(session_vars, get_device_attribute):
+def get_devices_by_attributes(get_all_devices)-> list:
     """
     Get devices attributes: address, name, type
     """
-    session_vars['device'] = get_device_attribute[0]
-    session_vars['device-1'] = get_device_attribute[1]
-    session_vars['device-2'] = get_device_attribute[2]
-    session_vars['device-3'] = get_device_attribute[3]
-    session_vars['device-4'] = get_device_attribute[4]
+    response = get_all_devices
+    attributes_key = ['address','type','name']
+    result = []
+    for index, item in enumerate(response):
+        result.append([item[x] for x in attributes_key])
+    return result
 
 
 @pytest.fixture(scope="session")
-def get_devices_pmw(session_vars):
-    """
-    Get devices PMW: Duty, Frequency
-    """
-    response = requests.get(DEVICES_TABLE_HOST).json()
-    session_vars['pin1'] = (response[0]['pin_1_pwm_d'], response[0]['pin_1_pwm_f'])
-    session_vars['pin2'] = (response[0]['pin_2_pwm_d'], response[0]['pin_2_pwm_f'])
-    session_vars['pin3'] = (response[1]['pin_1_pwm_d'], response[1]['pin_1_pwm_f'])
-    session_vars['pin4'] = (response[1]['pin_2_pwm_d'], response[1]['pin_2_pwm_f'])
+def create_devices_dict(session_vars, get_devices_by_attributes):
+    session_vars['devices'] = get_devices_by_attributes
