@@ -121,7 +121,7 @@ def get_number_of_devices() -> int:
 
 
 @pytest.fixture(scope="session")
-def get_devices_by_attributes(get_all_devices)-> list:
+def get_devices_by_attributes(get_all_devices) -> list:
     """
     Get devices attributes: address, name, type
     """

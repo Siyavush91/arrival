@@ -7,7 +7,7 @@ class APIClient:
         self.url = url
 
     def get_report(self, address: str = None, rep_id: int = None):
-        report = {'address': address, "repId": rep_id}
+        report = {"repId": rep_id, 'address': address,}
         request = requests.get(f'{self.url}/report', params=report)
         return request
 

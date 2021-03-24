@@ -1,12 +1,7 @@
-import sys
-
-from selenium.webdriver import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotVisibleException, \
     StaleElementReferenceException
-import time
-from selenium.webdriver.common.by import By
 
 """
 Base Page comes here.
