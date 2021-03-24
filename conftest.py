@@ -1,14 +1,18 @@
 """
-This module contains shared fixtures for web UI tests.
+This module contains shared fixtures for UI tests.
 """
-
+import os
 import json
 import allure
 import pytest
-from selenium.webdriver import Chrome, Firefox
-from helpers.settings import BASE_HOST
+import requests
+import datetime
+import logging
+from selenium.webdriver import Firefox
+from helpers.settings import DEVICES_TABLE_HOST
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEventListener
 
 CONFIG_PATH = 'config.json'
 DEFAULT_WAIT_TIME = 10
@@ -21,6 +25,14 @@ def config():
     with open(CONFIG_PATH) as config_file:
         data = json.load(config_file)
     return data
+
+
+@pytest.fixture(scope="session")
+def session_vars():
+    session_vars = {
+        "device": '',
+    }
+    return session_vars
 
 
 @pytest.fixture(scope='session')
@@ -61,6 +73,7 @@ def browser(request, config_browser, config_wait_time):
     driver.implicitly_wait(config_wait_time)
     # open browser fullscreen
     driver.maximize_window()
+    driver = EventFiringWebDriver(driver, WdListener())
 
     # Return the driver object at the end of setup
     yield driver
@@ -68,19 +81,58 @@ def browser(request, config_browser, config_wait_time):
         # Make the screen-shot if test failed:
         try:
             driver.execute_script("document.body.bgColor = 'white';")
-            # Attaching video to Allure
-            # @todo implement video_recording again with docker
-            # screenshot_capturing.terminate(video_recorder_process)
-            # _attach_video_to_allure()
-
             # Attaching screenshot to Allure
             allure.attach(driver.get_screenshot_as_png(),
                           name=request.function.__name__,
                           attachment_type=allure.attachment_type.PNG)
         except:
-            pass # just ignore
+            pass  # just ignore
 
     # For cleanup, quit the driver
     def fin():
         driver.close()
     request.addfinalizer(fin)
+
+
+class WdListener(AbstractEventListener):
+
+    def on_exception(self, exception, driver):
+        dirname = os.path.dirname(__file__)
+        now = datetime.datetime.now()
+        img_name = now.strftime("%Y-%m-%d_%H-%m-%S") + '_img.png'
+        img_path = os.path.join(dirname, 'screenshots', img_name)
+        message = str(now) + driver.name + "_" + exception.msg
+        driver.save_screenshot(img_path)
+        allure.attach.file(img_path, attachment_type=allure.attachment_type.PNG)
+        logging.error(message)
+
+
+@pytest.fixture(scope='session')
+def get_all_devices() -> list:
+    request = requests.get(DEVICES_TABLE_HOST)
+    return json.loads(request.content)
+
+
+@pytest.fixture(scope='session')
+def get_number_of_devices() -> int:
+    request = requests.get(DEVICES_TABLE_HOST).json()
+    number = len(request)
+    return number
+
+
+@pytest.fixture(scope="session")
+def get_devices_by_attributes(get_all_devices) -> list:
+    """
+    Get devices attributes: address, name, type
+    """
+    response = get_all_devices
+    attributes_key = ['address','type','name']
+    result = []
+    for index, item in enumerate(response):
+        result.append([item[x] for x in attributes_key])
+    return result
+
+
+@pytest.fixture(scope="session")
+def create_devices_dict(session_vars, get_devices_by_attributes):
+    session_vars['devices'] = get_devices_by_attributes
